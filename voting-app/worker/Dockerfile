@@ -18,6 +18,6 @@ RUN adduser -D supinfo
 
 USER supinfo
 
-COPY --from=build --chown=appuser:appuser /app .
+COPY --from=build --chown=supinfo:supinfo /app .
 
 CMD ["dotnet", "Worker.dll"]
