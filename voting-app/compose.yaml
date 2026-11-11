@@ -1,11 +1,15 @@
 services:
   redis:
     image: redis:8.8-alpine
+    networks:
+      - redis-reseau
 
   vote:
     build: ./vote
     ports:
       - "8080:8080"
+    networks:
+      - redis-reseau
 
   db:
     image: postgres:16.15-alpine
@@ -15,14 +19,25 @@ services:
       - POSTGRES_DB=postgres
     volumes:
       - db-votes:/var/lib/postgresql/data
+    networks:
+      - db-reseau
 
   worker:
     build: ./worker
+    networks:
+      - redis-reseau
+      - db-reseau
 
   result:
     build: ./result
     ports:
       - "8081:8888"
+    networks:
+      - db-reseau
 
 volumes:
   db-votes:
+
+networks:
+  redis-reseau:
+  db-reseau:
