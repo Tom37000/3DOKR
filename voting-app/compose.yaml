@@ -3,6 +3,11 @@ services:
     image: redis:8.8-alpine
     networks:
       - redis-reseau
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   vote:
     build: ./vote
@@ -10,6 +15,11 @@ services:
       - "8080:8080"
     networks:
       - redis-reseau
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8080"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   db:
     image: postgres:16.15-alpine
@@ -21,6 +31,11 @@ services:
       - db-votes:/var/lib/postgresql/data
     networks:
       - db-reseau
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   worker:
     build: ./worker
@@ -34,6 +49,11 @@ services:
       - "8081:8888"
     networks:
       - db-reseau
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8888"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
 volumes:
   db-votes:
