@@ -13,6 +13,8 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=postgres
+    volumes:
+      - db-votes:/var/lib/postgresql/data
 
   worker:
     build: ./worker
@@ -21,3 +23,6 @@ services:
     build: ./result
     ports:
       - "8081:8888"
+
+volumes:
+  db-votes:
