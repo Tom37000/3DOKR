@@ -1,0 +1,23 @@
+services:
+  redis:
+    image: redis:8.8-alpine
+
+  vote:
+    build: ./vote
+    ports:
+      - "8080:8080"
+
+  db:
+    image: postgres:16.15-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+
+  worker:
+    build: ./worker
+
+  result:
+    build: ./result
+    ports:
+      - "8081:8888"
