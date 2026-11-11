@@ -1,0 +1,79 @@
+services:
+  redis:
+    image: redis:8.8-alpine
+    networks:
+      - redis-reseau
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+
+  vote:
+    image: 127.0.0.1:5000/vote:1.0
+    ports:
+      - "8080:8080"
+    networks:
+      - redis-reseau
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8080"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    deploy:
+      replicas: 2
+
+  db:
+    image: postgres:16.15-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    volumes:
+      - db-votes:/var/lib/postgresql/data
+    networks:
+      - db-reseau
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+
+  worker:
+    image: 127.0.0.1:5000/worker:1.0
+    networks:
+      - redis-reseau
+      - db-reseau
+    deploy:
+      replicas: 1
+
+  result:
+    image: 127.0.0.1:5000/result:1.0
+    ports:
+      - "8081:8888"
+    networks:
+      - db-reseau
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8888"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    deploy:
+      replicas: 2
+
+volumes:
+  db-votes:
+
+networks:
+  redis-reseau:
+    driver: overlay
+  db-reseau:
+    driver: overlay
